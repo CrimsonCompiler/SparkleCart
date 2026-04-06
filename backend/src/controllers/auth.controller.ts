@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { registrationSchema } from "../schemas/auth.schema";
+import { loginSchema, registrationSchema } from "../schemas/auth.schema";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwt";
 import prisma from "../config/prisma";
@@ -64,6 +64,26 @@ export const customerRegister = async (
     });
   } catch (error) {
     console.error("Registration error: ", error); // showing in the console ?
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// ==================
+// Customer Login
+// ==================
+
+export const customerLogin = async (req: Request, res: Response) => {
+  try {
+    const validatedData = loginSchema.safeParse(req.body);
+
+    if (!validatedData.success) {
+      res.status(400).json({
+        message: "Validation failed",
+        error: validatedData.error.flatten().fieldErrors,
+      });
+    }
+  } catch (error) {
+    console.error("Login error: ", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
