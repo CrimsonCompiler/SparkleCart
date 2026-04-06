@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { registrationSchema } from "../schemas/auth.schema";
 import bcrypt from "bcrypt";
+import { generateToken } from "../utils/jwt";
+import prisma from "../config/prisma";
 // =====================
 // Customer Registration
 // =====================
@@ -22,7 +24,7 @@ export const customerRegister = async (
 
     const { name, email, password } = validationResult.data;
 
-    const existingUser = await prisma?.customer.findUnique({
+    const existingUser = await prisma.customer.findUnique({
       where: { email },
     });
 
@@ -38,13 +40,16 @@ export const customerRegister = async (
     const passwordHash = await bcrypt.hash(password, salt);
 
     // 4. Create a new user
-    const newUser = prisma?.customer.create({
+    const newUser = await prisma.customer.create({
       data: {
         name,
         email,
         passwordHash,
       },
     });
+
+    // 5. Generate JWT token
+    const token = generateToken(newUser.id, newUser.role);
 
     res.status(201).json({
       message: "Register API endpoint is working",
