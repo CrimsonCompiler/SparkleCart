@@ -73,7 +73,10 @@ export const customerRegister = async (
 // Customer Login
 // ==================
 
-export const customerLogin = async (req: Request, res: Response) => {
+export const customerLogin = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const validatedData = loginSchema.safeParse(req.body);
 
@@ -82,7 +85,37 @@ export const customerLogin = async (req: Request, res: Response) => {
         message: "Validation failed",
         error: validatedData.error.flatten().fieldErrors,
       });
+      return;
     }
+
+    const { email, password } = validatedData.data;
+
+    const user = await prisma.customer.findUnique({ where: { email } });
+
+    if (!user) {
+      res.status(401).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+
+    if (!isPasswordValid) {
+      res.status(401).json({ message: "Invalid email or password" });
+      return;
+    }
+
+    const token = generateToken(user.id, user.role);
+
+    res.status(200).json({
+      message: "Login Successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      token,
+    });
   } catch (error) {
     console.error("Login error: ", error);
     res.status(500).json({ message: "Internal Server Error" });
