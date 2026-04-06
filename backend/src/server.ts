@@ -2,7 +2,7 @@ import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mainRouter from "./routes/index";
-dotenv.config();
+dotenv.config({ quiet: true });
 
 const app: Application = express();
 const PORT = process.env.PORT || 5000;
