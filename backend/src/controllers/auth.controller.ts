@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { registrationSchema } from "../schemas/auth.schema";
+import bcrypt from "bcrypt";
 // =====================
 // Customer Registration
 // =====================
@@ -20,6 +21,30 @@ export const customerRegister = async (
     }
 
     const { name, email, password } = validationResult.data;
+
+    const existingUser = await prisma?.customer.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      res.status(400).json({
+        message: "User with this email already exists",
+      });
+      return;
+    }
+
+    // 3. password hashing
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    // 4. Create a new user
+    const newUser = prisma?.customer.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+      },
+    });
 
     res.status(201).json({
       message: "Register API endpoint is working",
