@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "__876@#sparklecart__00";
+const JWT_SECRET = process.env.JWT_SECRET || "aquafina_water_bottle_ekhane";
 
 export interface DecodedToken {
   id: string;
