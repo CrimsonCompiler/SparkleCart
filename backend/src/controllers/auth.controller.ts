@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { registrationSchema } from "../schemas/auth.schema";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwt";
 import prisma from "../config/prisma";
+
 // =====================
 // Customer Registration
 // =====================
@@ -53,12 +54,16 @@ export const customerRegister = async (
 
     res.status(201).json({
       message: "Register API endpoint is working",
-      receivedData: {
-        name,
-        email,
+      userData: {
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
       },
+      token,
     });
   } catch (error) {
+    console.error("Registration error: ", error); // showing in the console ?
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
