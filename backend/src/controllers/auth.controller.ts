@@ -3,6 +3,7 @@ import { loginSchema, registrationSchema } from "../schemas/auth.schema";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../utils/jwt";
 import prisma from "../config/prisma";
+import { AuthRequest } from "../middlewares/auth.middleware";
 
 // =====================
 // Customer Registration
@@ -85,5 +86,49 @@ export const customerLogin = async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Login error: ", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// =====================
+// Get Customer Profile
+// =====================
+
+export const getCustomerProfile = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    const customerId = req.user?.id;
+
+    if (!customerId) {
+      res.status(401).json({
+        message: "Unauthorized",
+      });
+      return;
+    }
+
+    const customer = await prisma.customer.findUnique({
+      where: { id: customerId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    if (!customer) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json({
+      message: "VIP Entry Successful",
+      customer,
+    });
+  } catch (error) {
+    console.error("Profile Error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
