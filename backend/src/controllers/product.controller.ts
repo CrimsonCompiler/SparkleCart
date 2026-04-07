@@ -16,20 +16,37 @@ export const createProduct = async (
       });
       return;
     }
-    const { title, description, basePrice, variants } = validationResult.data;
+    const { title, description, basePrice, variants, images } =
+      validationResult.data;
 
     const newProduct = await prisma.product.create({
       data: {
         title,
         description,
         basePrice,
+
+        images: images && images.length > 0 ? { create: images } : undefined,
         variants: {
-          create: variants,
+          create: variants.map((variant) => ({
+            size: variant.size,
+            color: variant.color,
+            stockQuantity: variant.stockQuantity,
+            sku: variant.sku,
+            images:
+              variant.images && variant.images.length > 0
+                ? { create: variant.images }
+                : undefined,
+          })),
         },
       },
 
       include: {
-        variants: true,
+        images: true,
+        variants: {
+          include: {
+            images: true,
+          },
+        },
       },
     });
 
