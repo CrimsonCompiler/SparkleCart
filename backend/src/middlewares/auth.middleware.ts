@@ -45,3 +45,17 @@ export const protect = (
     res.status(401).json({ message: "Invalid or expired token." });
   }
 };
+
+export const adminOnly = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+): void => {
+  if (req.user && req.user.role === "ADMIN") {
+    next();
+  } else {
+    res.status(403).json({
+      message: "Access Forbidden.",
+    });
+  }
+};
