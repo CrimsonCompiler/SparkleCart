@@ -27,6 +27,7 @@ model Customer {
   passwordHash String
   role         Role     @default(CUSTOMER)
   orders       Order[]
+  cart         Cart?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -38,6 +39,7 @@ model Product {
   basePrice   Decimal          @db.Decimal(10, 2)
   variants    ProductVariant[]
   images      ProductImage[]
+  cartItems   CartItem[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 }
@@ -54,6 +56,7 @@ model ProductVariant {
   images        ProductImage[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+  cartItems     CartItem[]
 
   @@unique([productId, size, color])
 }
@@ -94,4 +97,28 @@ model OrderItem {
   priceAtPurchase Decimal        @db.Decimal(10, 2)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  user      Customer   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        String         @id @default(uuid())
+  cartId    String
+  cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variantId String
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  quantity  Int
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  product   Product?       @relation(fields: [productId], references: [id])
+  productId String?
+
+  @@unique([cartId, variantId])
 }
