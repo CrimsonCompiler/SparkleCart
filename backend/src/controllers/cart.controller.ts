@@ -1,8 +1,6 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "../../generated/prisma";
+import prisma from "../config/prisma";
 import { syncCartSchema } from "../schemas/cart.schema";
-
-const prisma = new PrismaClient();
 
 export const syncCart = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -74,8 +72,6 @@ export const syncCart = async (req: Request, res: Response): Promise<void> => {
       message: "Cart synced successfully",
       cart: updatedCart,
     });
-
-    
   } catch (error) {
     console.error("Cart Sync Error:", error);
     res.status(500).json({ message: "Internal server error during cart sync" });
