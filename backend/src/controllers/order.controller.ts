@@ -107,7 +107,7 @@ export const getUserOrders = async (
     }
 
     // 2. Fetching the orders using the userId
-    const orders = prisma.order.findMany({
+    const orders = await prisma.order.findMany({
       where: {
         userId: userId,
       },
