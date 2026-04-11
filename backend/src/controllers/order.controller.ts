@@ -86,3 +86,67 @@ export const checkoutCart = async (
     res.status(500).json({ message: "Internal server error during checkout" });
   }
 };
+
+// =========================
+// GET USER ORDERS
+// =========================
+
+export const getUserOrders = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    // 1. Grab the user Id
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      res.status(401).json({
+        message: "Please login to view your orders",
+      });
+      return;
+    }
+
+    // 2. Fetching the orders using the userId
+    const orders = prisma.order.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+                images: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    // 3. If no orders available
+    if ((await orders).length === 0) {
+      res.status(200).json({
+        message: "You haven't placed any order yet",
+        orders: [],
+      });
+      return;
+    }
+
+    // 4. If the orders are available
+    res.status(200).json({
+      message: "Order history fetched successfully",
+      totalOrders: (await orders).length,
+      orders: orders,
+    });
+  } catch (error) {
+    console.error("Fetch Orders Error:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error while fetching orders" });
+  }
+};
