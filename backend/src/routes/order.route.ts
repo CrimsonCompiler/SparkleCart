@@ -12,5 +12,5 @@ router.post("/checkout", protect, checkoutCart);
 router.get("/history", protect, getUserOrders);
 
 // Admin only
-router.get("/all-orders", adminOnly, getAllOrdersForAdmin);
+router.get("/admin/all-orders", protect, adminOnly, getAllOrdersForAdmin);
 export default router;
