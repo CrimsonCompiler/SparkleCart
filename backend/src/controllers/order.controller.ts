@@ -150,3 +150,46 @@ export const getUserOrders = async (
       .json({ message: "Internal server error while fetching orders" });
   }
 };
+
+export const getAllOrdersForAdmin = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
+    const orders = await prisma.order.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+
+        items: {
+          include: {
+            variant: {
+              include: {
+                product: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "All orders fetched successfully",
+      totalOrders: orders.length,
+      orders: orders,
+    });
+  } catch (error) {
+    console.error("Admin Fetch Orders Error:", error);
+    res
+      .status(500)
+      .json({ message: "Internal server error while fetching all orders" });
+  }
+};
